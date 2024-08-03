@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="delta_change_detector",
-    version="0.1.1",
+    version="0.1.2",
     author="Nicholas G. Piesco",
     author_email="ngpiesco@gmail.com",
     description="A package to detect changes in Delta Lake tables.",
