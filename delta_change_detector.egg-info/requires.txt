@@ -1,3 +1,0 @@
-deltalake
-pyarrow
-pandas
