@@ -89,7 +89,7 @@ The script includes error handling to manage file reading issues and log parsing
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
 
 ## Contributing
 
@@ -97,4 +97,4 @@ Contributions are welcome! Please submit a pull request or open an issue for sug
 
 ## Author
 
-[Nicholas G. Piesco](https://github.com/npiesco)
+[Nicholas G. Piesco](https://github.com/npiesco/delta_change_detector)

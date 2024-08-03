@@ -1,0 +1,36 @@
+# Ignore distribution and build directories
+/dist/
+/build/
+
+# Ignore egg-info directory
+/delta_change_detector.egg-info/
+
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ignore virtual environment directories
+venv/
+ENV/
+env/
+.venv/
+.ENV/
+.env/
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore log files
+*.log
+
+# Ignore temporary files
+*.tmp
+*.temp
+
+# Ignore compiled Python files
+*.pyo
+
+# Ignore Git files
+/.git/
