@@ -62,11 +62,13 @@ id_value = 12345
 
 changes = detect_changes(delta_path, id_column, column_name, id_value)
 
-if "error" in changes:
-    print(changes["error"])
-else:
+if isinstance(changes, dict) and "message" in changes:
+    print(changes["message"])
+elif isinstance(changes, list):
     for record in changes:
-        print(f"Version: {record['version']}, Operation: {record['operation']}, Old Value: {record['old_value']}, New Value: {record['new_value']}")
+        print(f"Version: {record.get('version')}, Operation: {record.get('operation')}, Old Value: {record.get('old_value')}, New Value: {record.get('new_value')}")
+else:
+    print(changes)
 ```
 
 ## Functions

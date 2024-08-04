@@ -136,15 +136,15 @@ def detect_changes(delta_path, id_column, column_name, id_value):
         if not found_matching_record:
             missing_record_message = f"No records found matching {id_column} = {id_value}"
             logging.info(missing_record_message)
-            return {f"Missing Record: {missing_record_message}"}
+            return {f"Message: '{missing_record_message}'"}
         elif change_version is None:
             no_change_message = f"No changes detected for {column_name} where {id_column} = {id_value}"
             logging.info(no_change_message)
-            return {f"No Changes: {no_change_message}"}
+            return {f"Message: '{no_change_message}'"}
         else:
             return records
 
     except Exception as e:
         error_message = f"An error occurred: {str(e)}"
         logging.error(error_message)
-        return {f"An error occurred: {str(e)}"}
+        return {f"Message: '{error_message}'"}
