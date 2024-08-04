@@ -1,10 +1,12 @@
 # detector.py
-# detector.py
 import json
 import os
 from deltalake import DeltaTable
 import pyarrow.parquet as pq
 from datetime import datetime
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def parse_delta_log(delta_log_path):
     with open(delta_log_path, 'r') as log_file:
@@ -25,10 +27,11 @@ def extract_log_info(log_entries):
 
 def detect_changes(delta_path, id_column, column_name, id_value):
     try:
-        print(f"Attempting to open Delta table at: {delta_path}")
+        logging.info(f"Attempting to open Delta table at: {delta_path}")
         
         delta_table = DeltaTable(delta_path)
         history = delta_table.history()
+        logging.info(f"Successfully opened Delta table. History length: {len(history)}")
 
         new_value, change_version, records = None, None, []
         found_matching_record = False
@@ -40,12 +43,14 @@ def detect_changes(delta_path, id_column, column_name, id_value):
             timestamp = datetime.fromtimestamp(version_info['timestamp'] / 1000).strftime('%Y-%m-%d %H:%M:%S')
             
             delta_log_path = os.path.join(delta_path, '_delta_log', f'{version_num:020}.json')
+            logging.info(f"Processing version {version_num} with log path {delta_log_path}")
             
             try:
                 with open(delta_log_path, 'r') as log_file:
                     log_entries = [json.loads(line) for line in log_file]
+                logging.info(f"Successfully read log file {delta_log_path}")
             except Exception as e:
-                print(f"Error reading log file {delta_log_path}: {str(e)}")
+                logging.error(f"Error reading log file {delta_log_path}: {str(e)}")
                 continue
 
             add_paths, remove_paths, mode = extract_log_info(log_entries)
@@ -56,18 +61,23 @@ def detect_changes(delta_path, id_column, column_name, id_value):
             for file in version_table.files():
                 try:
                     table = pq.read_table(os.path.join(delta_path, file))
+                    logging.info(f"Reading Parquet file: {file}")
                     id_column_data = table.column(id_column)
                     column_data = table.column(column_name)
                     
                     for i in range(len(id_column_data)):
-                        if id_column_data[i].as_py() == id_value:
+                        id_value_str = str(id_value)
+                        id_column_value_str = str(id_column_data[i].as_py())
+                        logging.debug(f"Comparing id_value: {id_value_str} with id_column_value: {id_column_value_str}")
+                        if id_column_value_str == id_value_str:
                             found_matching_record = True
                             current_value = column_data[i].as_py()
+                            logging.info(f"Found matching record: {current_value}")
                             break
                     if found_matching_record:
                         break
                 except Exception as e:
-                    print(f"Error reading parquet file {file}: {str(e)}")
+                    logging.error(f"Error reading parquet file {file}: {str(e)}")
 
             if current_value is not None:
                 if new_value is None:
@@ -84,8 +94,9 @@ def detect_changes(delta_path, id_column, column_name, id_value):
                         try:
                             with open(previous_delta_log_path, 'r') as log_file:
                                 previous_log_entries = [json.loads(line) for line in log_file]
+                            logging.info(f"Successfully read previous log file {previous_delta_log_path}")
                         except Exception as e:
-                            print(f"Error reading previous log file {previous_delta_log_path}: {str(e)}")
+                            logging.error(f"Error reading previous log file {previous_delta_log_path}: {str(e)}")
                             continue
 
                         previous_add_paths, previous_remove_paths, previous_mode = extract_log_info(previous_log_entries)
@@ -123,11 +134,17 @@ def detect_changes(delta_path, id_column, column_name, id_value):
                     break
 
         if not found_matching_record:
-            return {"error": f"No records found matching {id_column} = {id_value}"}
+            missing_record_message = f"No records found matching {id_column} = {id_value}"
+            logging.info(missing_record_message)
+            return {"error": missing_record_message}
         elif change_version is None:
-            return {"info": f"No changes detected for {column_name} where {id_column} = {id_value}"}
+            no_change_message = f"No changes detected for {column_name} where {id_column} = {id_value}"
+            logging.info(no_change_message)
+            return {"info": no_change_message}
         else:
             return records
 
     except Exception as e:
-        return {"error": f"An error occurred: {str(e)}"}
+        error_message = f"An error occurred: {str(e)}"
+        logging.error(error_message)
+        return {"error": error_message}
