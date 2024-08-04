@@ -43,12 +43,12 @@ def detect_changes(delta_path, id_column, column_name, id_value):
             timestamp = datetime.fromtimestamp(version_info['timestamp'] / 1000).strftime('%Y-%m-%d %H:%M:%S')
             
             delta_log_path = os.path.join(delta_path, '_delta_log', f'{version_num:020}.json')
-            logging.info(f"Processing version {version_num} with log path {delta_log_path}")
+            logging.debug(f"Processing version {version_num} with log path {delta_log_path}")
             
             try:
                 with open(delta_log_path, 'r') as log_file:
                     log_entries = [json.loads(line) for line in log_file]
-                logging.info(f"Successfully read log file {delta_log_path}")
+                logging.debug(f"Successfully read log file {delta_log_path}")
             except Exception as e:
                 logging.error(f"Error reading log file {delta_log_path}: {str(e)}")
                 continue
@@ -61,7 +61,7 @@ def detect_changes(delta_path, id_column, column_name, id_value):
             for file in version_table.files():
                 try:
                     table = pq.read_table(os.path.join(delta_path, file))
-                    logging.info(f"Reading Parquet file: {file}")
+                    logging.debug(f"Reading Parquet file: {file}")
                     id_column_data = table.column(id_column)
                     column_data = table.column(column_name)
                     
@@ -94,7 +94,7 @@ def detect_changes(delta_path, id_column, column_name, id_value):
                         try:
                             with open(previous_delta_log_path, 'r') as log_file:
                                 previous_log_entries = [json.loads(line) for line in log_file]
-                            logging.info(f"Successfully read previous log file {previous_delta_log_path}")
+                            logging.debug(f"Successfully read previous log file {previous_delta_log_path}")
                         except Exception as e:
                             logging.error(f"Error reading previous log file {previous_delta_log_path}: {str(e)}")
                             continue
@@ -136,15 +136,15 @@ def detect_changes(delta_path, id_column, column_name, id_value):
         if not found_matching_record:
             missing_record_message = f"No records found matching {id_column} = {id_value}"
             logging.info(missing_record_message)
-            return {"error": missing_record_message}
+            return {f"Missing Record: {missing_record_message}"}
         elif change_version is None:
             no_change_message = f"No changes detected for {column_name} where {id_column} = {id_value}"
             logging.info(no_change_message)
-            return {"info": no_change_message}
+            return {f"No Changes: {no_change_message}"}
         else:
             return records
 
     except Exception as e:
         error_message = f"An error occurred: {str(e)}"
         logging.error(error_message)
-        return {"error": error_message}
+        return {f"An error occurred: {str(e)}"}
