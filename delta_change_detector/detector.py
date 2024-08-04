@@ -1,4 +1,5 @@
 # detector.py
+# detector.py
 import json
 import os
 from deltalake import DeltaTable
@@ -55,11 +56,15 @@ def detect_changes(delta_path, id_column, column_name, id_value):
             for file in version_table.files():
                 try:
                     table = pq.read_table(os.path.join(delta_path, file))
-                    df = table.to_pandas()
-                    row = df[df[id_column] == id_value]
-                    if not row.empty:
-                        found_matching_record = True
-                        current_value = row[column_name].values[0]
+                    id_column_data = table.column(id_column)
+                    column_data = table.column(column_name)
+                    
+                    for i in range(len(id_column_data)):
+                        if id_column_data[i].as_py() == id_value:
+                            found_matching_record = True
+                            current_value = column_data[i].as_py()
+                            break
+                    if found_matching_record:
                         break
                 except Exception as e:
                     print(f"Error reading parquet file {file}: {str(e)}")
