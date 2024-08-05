@@ -60,15 +60,8 @@ id_column = "user_id"
 column_name = "status"
 id_value = 12345
 
-changes = detect_changes(delta_path, id_column, column_name, id_value)
-
-if isinstance(changes, dict) and "message" in changes:
-    print(changes["message"])
-elif isinstance(changes, list):
-    for record in changes:
-        print(f"Version: {record.get('version')}, Operation: {record.get('operation')}, Old Value: {record.get('old_value')}, New Value: {record.get('new_value')}")
-else:
-    print(changes)
+changes = detect_changes(delta_table_path, unique_col, tracked_col, unique_value)
+print(changes)
 ```
 
 ## Functions

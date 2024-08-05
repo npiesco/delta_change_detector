@@ -35,6 +35,7 @@ def detect_changes(delta_path, id_column, column_name, id_value):
 
         new_value, change_version, records = None, None, []
         found_matching_record = False
+        matching_record_printed = False
 
         for version in reversed(range(len(history))):
             version_info = history[version]
@@ -72,7 +73,9 @@ def detect_changes(delta_path, id_column, column_name, id_value):
                         if id_column_value_str == id_value_str:
                             found_matching_record = True
                             current_value = column_data[i].as_py()
-                            logging.info(f"Found matching record: {current_value}")
+                            if not matching_record_printed:
+                                logging.info(f"Found matching record: {current_value}")
+                                matching_record_printed = True
                             break
                     if found_matching_record:
                         break
@@ -136,15 +139,24 @@ def detect_changes(delta_path, id_column, column_name, id_value):
         if not found_matching_record:
             missing_record_message = f"No records found matching {id_column} = {id_value}"
             logging.info(missing_record_message)
-            return {f"Message: '{missing_record_message}'"}
+            print(missing_record_message)
         elif change_version is None:
             no_change_message = f"No changes detected for {column_name} where {id_column} = {id_value}"
             logging.info(no_change_message)
-            return {f"Message: '{no_change_message}'"}
+            print(no_change_message)
         else:
-            return records
+            print("Changes detected:")
+            for record in records:
+                print(f"Version: {record.get('version')}")
+                print(f"Operation: {record.get('operation')}")
+                print(f"Old Value: {record.get('old_value')}")
+                print(f"New Value: {record.get('new_value')}")
+                print(f"Timestamp: {record.get('timestamp')}")
+                print(f"Parquet File Path: {record.get('parquet_file_path')}")
+                print(f"Delta Log Path: {record.get('delta_log_path')}")
+                print("---")
 
     except Exception as e:
         error_message = f"An error occurred: {str(e)}"
         logging.error(error_message)
-        return {f"Message: '{error_message}'"}
+        print(error_message)
