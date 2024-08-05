@@ -25,7 +25,7 @@ def extract_log_info(log_entries):
             mode = entry['commitInfo']['operationParameters'].get('mode')
     return add_paths, remove_paths, mode
 
-def detect_changes(delta_path, id_column, column_name, id_value):
+def detect_changes(delta_path, id_column, column_names, id_value):
     try:
         logging.info(f"Attempting to open Delta table at: {delta_path}")
         
@@ -33,7 +33,7 @@ def detect_changes(delta_path, id_column, column_name, id_value):
         history = delta_table.history()
         logging.info(f"Successfully opened Delta table. History length: {len(history)}")
 
-        new_value, change_version, records = None, None, []
+        new_values, change_version, records = {}, None, []
         found_matching_record = False
         matching_record_printed = False
 
@@ -57,14 +57,13 @@ def detect_changes(delta_path, id_column, column_name, id_value):
             add_paths, remove_paths, mode = extract_log_info(log_entries)
 
             version_table = DeltaTable(delta_path, version=version_num)
-            current_value = None
+            current_values = {}
 
             for file in version_table.files():
                 try:
                     table = pq.read_table(os.path.join(delta_path, file))
                     logging.debug(f"Reading Parquet file: {file}")
                     id_column_data = table.column(id_column)
-                    column_data = table.column(column_name)
                     
                     for i in range(len(id_column_data)):
                         id_value_str = str(id_value)
@@ -72,9 +71,11 @@ def detect_changes(delta_path, id_column, column_name, id_value):
                         logging.debug(f"Comparing id_value: {id_value_str} with id_column_value: {id_column_value_str}")
                         if id_column_value_str == id_value_str:
                             found_matching_record = True
-                            current_value = column_data[i].as_py()
+                            for column_name in column_names:
+                                column_data = table.column(column_name)
+                                current_values[column_name] = column_data[i].as_py()
                             if not matching_record_printed:
-                                logging.info(f"Found matching record: {current_value}")
+                                logging.info(f"Found matching record: {current_values}")
                                 matching_record_printed = True
                             break
                     if found_matching_record:
@@ -82,11 +83,11 @@ def detect_changes(delta_path, id_column, column_name, id_value):
                 except Exception as e:
                     logging.error(f"Error reading parquet file {file}: {str(e)}")
 
-            if current_value is not None:
-                if new_value is None:
-                    new_value = current_value
-                elif current_value != new_value:
-                    old_value = current_value
+            if current_values:
+                if not new_values:
+                    new_values = current_values.copy()
+                else:
+                    old_values = current_values.copy()
                     change_version = version_num
 
                     if version + 1 < len(history):
@@ -111,8 +112,8 @@ def detect_changes(delta_path, id_column, column_name, id_value):
                             "id_column": id_column,
                             "original_record": True,
                             "modified_record": False,
-                            "old_value": old_value,
-                            "new_value": None,
+                            "old_values": old_values,
+                            "new_values": {},
                             "parquet_file_path": previous_parquet_file_path,
                             "delta_log_path": previous_delta_log_path,
                             "operation": previous_operation,
@@ -125,8 +126,8 @@ def detect_changes(delta_path, id_column, column_name, id_value):
                         "id_column": id_column,
                         "original_record": False,
                         "modified_record": True,
-                        "old_value": old_value,
-                        "new_value": new_value,
+                        "old_values": old_values,
+                        "new_values": new_values,
                         "parquet_file_path": add_paths[0] if add_paths else None,
                         "delta_log_path": delta_log_path,
                         "operation": operation,
@@ -141,7 +142,7 @@ def detect_changes(delta_path, id_column, column_name, id_value):
             logging.info(missing_record_message)
             print(missing_record_message)
         elif change_version is None:
-            no_change_message = f"No changes detected for {column_name} where {id_column} = {id_value}"
+            no_change_message = f"No changes detected for columns {column_names} where {id_column} = {id_value}"
             logging.info(no_change_message)
             print(no_change_message)
         else:
@@ -151,8 +152,8 @@ def detect_changes(delta_path, id_column, column_name, id_value):
                 print(f"Operation: {record.get('operation')}")
                 print(f"Mode: {record.get('mode')}")
                 print(f"ID Column: {record.get('id_column')}")
-                print(f"Old Value: {record.get('old_value')}")
-                print(f"New Value: {record.get('new_value')}")
+                print(f"Old Values: {record.get('old_values')}")
+                print(f"New Values: {record.get('new_values')}")
                 print(f"Timestamp: {record.get('timestamp')}")
                 print(f"Parquet File Path: {record.get('parquet_file_path')}")
                 print(f"Delta Log Path: {record.get('delta_log_path')}")

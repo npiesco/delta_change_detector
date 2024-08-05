@@ -5,7 +5,7 @@ This Python script is designed to detect changes in Delta Lake tables by examini
 ## Features
 
 - Parses Delta Lake log files to extract metadata about changes.
-- Detects changes to specified columns based on a given identifier.
+- Detects changes to specified column(s) based on a given identifier.
 - Returns detailed records of changes, including the version, operation, and timestamps.
 - Provides detailed information about original and modified records, including the file paths and modes.
 
@@ -39,7 +39,7 @@ The main function provided by this script is `detect_changes`, which analyzes ch
 
 - `delta_path` (str): Path to Delta table.
 - `id_column` (str): Column used as an identifier to match records.
-- `column_name` (str): Column whose changes you want to track.
+- `column_name` (list): Column(s) whose changes you want to track.
 - `id_value` (str or int): Value of identifier to search for in table.
 
 #### Returns:
@@ -63,7 +63,7 @@ The main function provided by this script is `detect_changes`, which analyzes ch
 ```python
 delta_path = "/path/to/delta/table"
 id_column = "user_id"
-column_name = "status"
+column_name = ["first_name", "last_name"]
 id_value = 12345
 
 changes = detect_changes(delta_path, id_column, column_name, id_value)
@@ -74,14 +74,14 @@ print(changes)
 ```
 2024-08-05 00:40:08,784 - INFO - Attempting to open Delta table at: /path/to/delta/table
 2024-08-05 00:40:08,822 - INFO - Successfully opened Delta table. History length: 40
-2024-08-05 00:40:08,919 - INFO - Found matching record: Nicholas
+2024-08-05 09:23:30,419 - INFO - Found matching record: {'first_name': 'Nicholas', 'last_name': 'Piesco'}
 Changes detected:
 Version: 14
 Operation: WRITE
 Mode: Append
 ID Column: id
-Old Value: Nick
-New Value: None
+Old Values: {'first_name': 'Nick', 'last_name': 'Piesco'}
+New Values: {}
 Timestamp: 2024-08-02 16:30:44
 Parquet File Path: 14-a06fd51b-2253-4436-aa03-7caf3311115d-0.parquet
 Delta Log Path: /path/to/delta/table/_delta_log/00000000000000000014.json
@@ -92,8 +92,8 @@ Version: 15
 Operation: WRITE
 Mode: Overwrite
 ID Column: id
-Old Value: Nick
-New Value: Nicholas
+Old Values: {'first_name': 'Nick', 'last_name': 'Piesco'}
+New Values: {'first_name': 'Nicholas', 'last_name': 'Piesco'}
 Timestamp: 2024-08-02 16:30:44
 Parquet File Path: 15-2365a517-edd4-4a3c-b070-8c44bd24944d-0.parquet
 Delta Log Path: /path/to/delta/table/_delta_log/00000000000000000015.json
@@ -115,7 +115,7 @@ None
 
 ### `detect_changes(delta_path, id_column, column_name, id_value)`
 
-- Analyzes Delta table's history to detect changes for specific column and identifier.
+- Analyzes Delta table's history to detect changes for specific column(s) and identifier.
 
 ## Error Handling
 
