@@ -64,6 +64,31 @@ changes = detect_changes(delta_table_path, unique_col, tracked_col, unique_value
 print(changes)
 ```
 
+#### Example Output:
+```
+2024-08-05 00:40:08,784 - INFO - Attempting to open Delta table at: /path/to/delta/table
+2024-08-05 00:40:08,822 - INFO - Successfully opened Delta table. History length: 40
+2024-08-05 00:40:08,919 - INFO - Found matching record: Nicholas
+Changes detected:
+Version: 14
+Operation: WRITE
+Old Value: Nick
+New Value: None
+Timestamp: 2024-08-02 16:30:44
+Parquet File Path: 14-a06fd51b-2253-4436-aa03-7caf3311115d-0.parquet
+Delta Log Path: /path/to/delta/table/_delta_log/00000000000000000014.json
+---
+Version: 15
+Operation: WRITE
+Old Value: Nick
+New Value: Nicholas
+Timestamp: 2024-08-02 16:30:44
+Parquet File Path: 15-2365a517-edd4-4a3c-b070-8c44bd24944d-0.parquet
+Delta Log Path: /path/to/delta/table/_delta_log/00000000000000000015.json
+---
+None
+```
+
 ## Functions
 
 ### `parse_delta_log(delta_log_path)`
