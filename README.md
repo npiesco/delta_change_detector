@@ -39,7 +39,7 @@ The main function provided by this script is `detect_changes`, which analyzes ch
 
 - `delta_path` (str): Path to Delta table.
 - `id_column` (str): Column used as an identifier to match records.
-- `column_name` (list): Column(s) whose changes you want to track.
+- `column_names` (list): Column(s) whose changes you want to track.
 - `id_value` (str or int): Value of identifier to search for in table.
 
 #### Returns:
@@ -63,10 +63,10 @@ The main function provided by this script is `detect_changes`, which analyzes ch
 ```python
 delta_path = "/path/to/delta/table"
 id_column = "user_id"
-column_name = ["first_name", "last_name"]
+column_names = ["first_name", "last_name"]
 id_value = 12345
 
-changes = detect_changes(delta_path, id_column, column_name, id_value)
+changes = detect_changes(delta_path, id_column, column_names, id_value)
 print(changes)
 ```
 
