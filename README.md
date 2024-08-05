@@ -66,7 +66,7 @@ id_column = "user_id"
 column_name = "status"
 id_value = 12345
 
-changes = detect_changes(delta_table_path, unique_col, tracked_col, unique_value)
+changes = detect_changes(delta_path, id_column, column_name, id_value)
 print(changes)
 ```
 
