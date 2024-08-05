@@ -19,6 +19,12 @@ This Python script is designed to detect changes in Delta Lake tables by examini
 
 To use this script, ensure you have Python installed and the required packages. You can install the packages using pip:
 
+*Module:*
+```bash
+pip install delta-change-detector
+```
+
+*Dependencies:*
 ```bash
 pip install deltalake pyarrow
 ```
@@ -72,19 +78,27 @@ print(changes)
 Changes detected:
 Version: 14
 Operation: WRITE
+Mode: Append
+ID Column: id
 Old Value: Nick
 New Value: None
 Timestamp: 2024-08-02 16:30:44
 Parquet File Path: 14-a06fd51b-2253-4436-aa03-7caf3311115d-0.parquet
 Delta Log Path: /path/to/delta/table/_delta_log/00000000000000000014.json
+Original Record: True
+Modified Record: False
 ---
 Version: 15
 Operation: WRITE
+Mode: Overwrite
+ID Column: id
 Old Value: Nick
 New Value: Nicholas
 Timestamp: 2024-08-02 16:30:44
 Parquet File Path: 15-2365a517-edd4-4a3c-b070-8c44bd24944d-0.parquet
 Delta Log Path: /path/to/delta/table/_delta_log/00000000000000000015.json
+Original Record: False
+Modified Record: True
 ---
 None
 ```

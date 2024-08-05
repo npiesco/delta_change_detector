@@ -149,11 +149,15 @@ def detect_changes(delta_path, id_column, column_name, id_value):
             for record in records:
                 print(f"Version: {record.get('version')}")
                 print(f"Operation: {record.get('operation')}")
+                print(f"Mode: {record.get('mode')}")
+                print(f"ID Column: {record.get('id_column')}")
                 print(f"Old Value: {record.get('old_value')}")
                 print(f"New Value: {record.get('new_value')}")
                 print(f"Timestamp: {record.get('timestamp')}")
                 print(f"Parquet File Path: {record.get('parquet_file_path')}")
                 print(f"Delta Log Path: {record.get('delta_log_path')}")
+                print(f"Original Record: {record.get('original_record')}")
+                print(f"Modified Record: {record.get('modified_record')}")
                 print("---")
 
     except Exception as e:
